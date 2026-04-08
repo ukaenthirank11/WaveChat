@@ -1,0 +1,503 @@
+{% extends "base.html" %}
+{% block head_extra %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chat-frontend.css', v=asset_version) }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/device-preview.css', v=asset_version) }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-chat-ui.css', v=asset_version) }}">
+{% endblock %}
+{% block content %}
+<main class="chat-shell whatsapp-shell whatsapp-web-frontend" id="chat-app" data-preview-mode="desktop" data-active-screen="split" data-socket-token="{{ socket_token }}" data-rtc-config='{{ rtc_configuration | tojson }}'>
+    <header class="app-topbar">
+        <div class="topbar-brand">
+            <span class="topbar-logo" aria-hidden="true">
+                <img class="topbar-logo-image" src="{{ url_for('static', filename='img/wavechat-logo.svg', v=asset_version) }}" alt="">
+            </span>
+            <span class="topbar-title">WaveChat</span>
+        </div>
+        <div class="window-controls" aria-hidden="true">
+            <span class="window-control min"></span>
+            <span class="window-control max"></span>
+            <span class="window-control close"></span>
+        </div>
+    </header>
+
+    <div class="whatsapp-layout">
+        <aside class="app-rail" aria-label="Primary navigation">
+            <div class="app-rail-icons rail-main-icons">
+                <button type="button" class="rail-btn active" id="rail-chats-btn" data-sidebar-view="chats" title="Chats" aria-label="Chats" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v6A2.5 2.5 0 0 1 16.5 15H10l-3.8 3.2c-.6.5-1.5.1-1.5-.7V15A2.5 2.5 0 0 1 2 12.5v-6A2.5 2.5 0 0 1 4.5 4H5zm2 2v2h10v-2H7zm0 4v1h6v-1H7z"/></svg>
+                </button>
+                <button type="button" class="rail-btn" id="rail-calls-btn" data-sidebar-view="calls" title="Calls" aria-label="Calls" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.7 15.7 0 0 0 6.6 6.6l2.2-2.2c.3-.3.8-.4 1.2-.3 1 .3 2 .5 3 .5.7 0 1.2.5 1.2 1.2V20c0 .7-.5 1.2-1.2 1.2C10.3 21.2 2.8 13.7 2.8 4.4 2.8 3.7 3.3 3.2 4 3.2h3.2c.7 0 1.2.5 1.2 1.2 0 1 .2 2 .5 3 .1.4 0 .9-.3 1.2l-2 2.2z"/></svg>
+                </button>
+                <button type="button" class="rail-btn has-status-dot" id="rail-status-btn" data-sidebar-view="status" title="Status" aria-label="Status" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8a9.2 9.2 0 1 0 9.2 9.2A9.2 9.2 0 0 0 12 2.8zm0 2.4a6.8 6.8 0 0 1 6.8 6.8h-2.4A4.4 4.4 0 0 0 12 7.6zm0 13.6a6.8 6.8 0 0 1 0-13.6v2.4A4.4 4.4 0 1 0 16.4 12h2.4A6.8 6.8 0 0 1 12 18.8z"/></svg>
+                </button>
+                <button type="button" class="rail-btn has-status-dot" title="Communities" aria-label="Communities">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 12.2A3.2 3.2 0 1 0 5.3 9a3.2 3.2 0 0 0 3.2 3.2zm7 0A3.2 3.2 0 1 0 12.3 9a3.2 3.2 0 0 0 3.2 3.2zm-7 1.6C6 13.8 1.8 15 1.8 17.4V20h13.4v-2.6c0-2.4-4.2-3.6-6.7-3.6zm7 0c-.3 0-.7 0-1 .1 1.2.8 2 1.9 2 3.5V20h5.7v-2.1c0-2.4-4-4.1-6.7-4.1z"/></svg>
+                </button>
+            </div>
+
+            <div class="rail-divider" aria-hidden="true"></div>
+
+            <div class="app-rail-icons rail-secondary-icons">
+                <button type="button" class="rail-btn" title="Downloads" aria-label="Downloads">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20h14v-2H5zm7-16v8.2l2.6-2.6L16 11l-4 4-4-4 1.4-1.4 2.6 2.6V4z"/></svg>
+                </button>
+                <button type="button" class="rail-btn" title="Theme" id="theme-toggle" aria-label="Toggle theme">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a1 1 0 0 1 1 1v1.7a1 1 0 1 1-2 0V4.5a1 1 0 0 1 1-1zm0 12.6a4.1 4.1 0 1 0 0-8.2 4.1 4.1 0 0 0 0 8.2zm7.1-5.1h-1.7a1 1 0 1 1 0-2h1.7a1 1 0 1 1 0 2zm-12.5 0H4.9a1 1 0 1 1 0-2h1.7a1 1 0 1 1 0 2zm9.2 5.1a1 1 0 0 1 1.4 0l1.2 1.2a1 1 0 1 1-1.4 1.4l-1.2-1.2a1 1 0 0 1 0-1.4zm-9.2-9.2a1 1 0 0 1 1.4 0L9.2 8A1 1 0 0 1 7.8 9.4L6.6 8.2a1 1 0 0 1 0-1.4zm10.6 0a1 1 0 0 1 1.4 1.4L17.4 9.4A1 1 0 0 1 16 8l1.2-1.2zm-10.6 9.2a1 1 0 0 1 0 1.4l-1.2 1.2A1 1 0 1 1 4 17.9l1.2-1.2a1 1 0 0 1 1.4 0zM12 17.8a1 1 0 0 1 1 1v1.7a1 1 0 1 1-2 0v-1.7a1 1 0 0 1 1-1z"/></svg>
+                </button>
+                <div class="rail-avatar-shell profile-rail">
+                    <button type="button" class="profile-trigger" id="profile-menu-btn" aria-label="Open profile" aria-expanded="false" aria-controls="profile-panel">
+                        <div class="avatar self-avatar" id="self-avatar">W</div>
+                    </button>
+                    <div class="profile-panel hidden" id="profile-panel">
+                        <div class="profile-panel-head">
+                            <div class="avatar profile-panel-avatar" id="profile-panel-avatar">W</div>
+                            <div class="profile-panel-copy">
+                                <strong id="self-name">You</strong>
+                                <span id="self-phone"></span>
+                                <span id="self-status">Realtime connecting</span>
+                            </div>
+                        </div>
+                        <div class="profile-login-copy">Signed in with OTP on this device</div>
+                        <button type="button" class="secondary-btn profile-logout-btn" id="logout-btn">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <aside class="sidebar" id="sidebar">
+            <header class="sidebar-header">
+                <div class="sidebar-brand sidebar-brand-main">
+                    <h2 id="sidebar-title">Chats</h2>
+                </div>
+                <div class="sidebar-actions">
+                    <button class="icon-btn compact-btn toolbar-button mobile-only" id="mobile-theme-toggle" title="Toggle theme" aria-label="Toggle theme">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a6.5 6.5 0 0 0 11.5 11.5z" fill="currentColor"/></svg>
+                        <span class="sr-only">Toggle theme</span>
+                    </button>
+                    <button class="icon-btn compact-btn toolbar-button" id="new-chat-btn" title="Start new chat" aria-label="Start new chat">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3H5a2 2 0 0 0-2 2v14l4-3h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-1 9h-4v4h-2v-4H8v-2h4V6h2v4h4v2z"/></svg>
+                        <span class="sr-only">New chat</span>
+                    </button>
+                    <button class="icon-btn compact-btn toolbar-button" id="sidebar-more-btn" title="More" aria-label="More options">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7a1.75 1.75 0 1 0 0-3.5A1.75 1.75 0 0 0 12 7zm0 7a1.75 1.75 0 1 0 0-3.5A1.75 1.75 0 0 0 12 14zm0 7a1.75 1.75 0 1 0 0-3.5A1.75 1.75 0 0 0 12 21z"/></svg>
+                        <span class="sr-only">More</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="sidebar-tools">
+                <input class="search-input sidebar-search" id="chat-search" type="search" placeholder="Search chats or phone number">
+            </div>
+
+            <section class="chat-filters" id="chat-filters" aria-label="Chat filters">
+                <button type="button" class="filter-chip active" data-filter="all" aria-pressed="true">All</button>
+                <button type="button" class="filter-chip" data-filter="unread" aria-pressed="false">Unread</button>
+                <button type="button" class="filter-chip" data-filter="pinned" aria-pressed="false">Favourites</button>
+                <button type="button" class="filter-chip icon-filter" data-filter="online" aria-pressed="false" title="Online only">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span class="sr-only">Online</span>
+                </button>
+            </section>
+
+            <section class="chat-list" id="chat-list"></section>
+        </aside>
+
+        <section class="conversation conversation-empty">
+            <header class="conversation-header" id="conversation-header">
+                <button class="icon-btn mobile-only compact-btn toolbar-button" id="mobile-back-btn" title="Back" aria-label="Back">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.4 5.4 9 11.8l6.4 6.4-1.4 1.4L6.2 11.8 14 4z"/></svg>
+                    <span class="sr-only">Back</span>
+                </button>
+                <div class="conversation-meta">
+                    <div class="avatar conversation-avatar-large" id="conversation-avatar">W</div>
+                    <div>
+                        <h3 id="conversation-title">Select a chat</h3>
+                        <p id="conversation-status">Send messages, photos, videos and files instantly.</p>
+                    </div>
+                </div>
+                <div class="conversation-actions">
+                    <div class="call-menu-wrap">
+                        <div class="call-compact-group">
+                            <button type="button" class="icon-btn compact-btn toolbar-button call-chip-main" id="video-call-btn" title="Open call actions" aria-label="Open call actions">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 10.5V7a2 2 0 0 0-2-2H5A2 2 0 0 0 3 7v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3.5L22 18V6z"/></svg>
+                                <span class="sr-only">Call actions</span>
+                            </button>
+                            <button type="button" class="icon-btn compact-btn toolbar-button call-chip-toggle" id="voice-call-btn" title="Open call actions" aria-label="Open call actions">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.7 15.7 0 0 0 6.6 6.6l2.2-2.2c.3-.3.8-.4 1.2-.3 1 .3 2 .5 3 .5.7 0 1.2.5 1.2 1.2V20c0 .7-.5 1.2-1.2 1.2C10.3 21.2 2.8 13.7 2.8 4.4 2.8 3.7 3.3 3.2 4 3.2h3.2c.7 0 1.2.5 1.2 1.2 0 1 .2 2 .5 3 .1.4 0 .9-.3 1.2l-2 2.2z"/></svg>
+                                <span class="sr-only">Open call actions</span>
+                            </button>
+                        </div>
+                        <div class="call-menu hidden" id="call-menu">
+                            <div class="call-menu-head">
+                                <div class="avatar call-menu-avatar" id="call-menu-avatar">W</div>
+                                <div>
+                                    <strong id="call-menu-name">Select a chat</strong>
+                                </div>
+                            </div>
+                            <div class="call-menu-primary">
+                                <button type="button" class="call-menu-action primary-call-action" data-call-type="voice">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.7 15.7 0 0 0 6.6 6.6l2.2-2.2c.3-.3.8-.4 1.2-.3 1 .3 2 .5 3 .5.7 0 1.2.5 1.2 1.2V20c0 .7-.5 1.2-1.2 1.2C10.3 21.2 2.8 13.7 2.8 4.4 2.8 3.7 3.3 3.2 4 3.2h3.2c.7 0 1.2.5 1.2 1.2 0 1 .2 2 .5 3 .1.4 0 .9-.3 1.2l-2 2.2z"/></svg>
+                                    <span>Voice</span>
+                                </button>
+                                <button type="button" class="call-menu-action primary-call-action" data-call-type="video">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 10.5V7a2 2 0 0 0-2-2H5A2 2 0 0 0 3 7v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3.5L22 18V6z"/></svg>
+                                    <span>Video</span>
+                                </button>
+                            </div>
+                            <div class="call-menu-divider"></div>
+                            <button type="button" class="call-menu-secondary" disabled>New group call</button>
+                            <button type="button" class="call-menu-secondary" disabled>Send call link</button>
+                            <button type="button" class="call-menu-secondary" disabled>Schedule call</button>
+                        </div>
+                    </div>
+                    <input class="search-input inline-search compact-search" id="message-search" type="search" placeholder="Search">
+                    <button type="button" class="icon-btn compact-btn toolbar-button" id="chat-info-btn" title="More" aria-label="More options">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7a1.75 1.75 0 1 0 0-3.5A1.75 1.75 0 0 0 12 7zm0 7a1.75 1.75 0 1 0 0-3.5A1.75 1.75 0 0 0 12 14zm0 7a1.75 1.75 0 1 0 0-3.5A1.75 1.75 0 0 0 12 21z"/></svg>
+                        <span class="sr-only">More</span>
+                    </button>
+                    <div class="chat-menu hidden" id="chat-menu" role="menu" aria-label="Chat options">
+                        <button type="button" class="chat-menu-item" data-chat-menu-action="view-contact">View contact</button>
+                        <button type="button" class="chat-menu-item" data-chat-menu-action="media">Media, links, and docs</button>
+                        <button type="button" class="chat-menu-item" data-chat-menu-action="search">Search</button>
+                        <button type="button" class="chat-menu-item" data-chat-menu-action="mute">Mute notifications</button>
+                        <button type="button" class="chat-menu-item" data-chat-menu-action="disappearing">Disappearing messages</button>
+                        <button type="button" class="chat-menu-item" data-chat-menu-action="wallpaper">Wallpaper</button>
+                        <div class="chat-menu-divider"></div>
+                        <button type="button" class="chat-menu-item" data-chat-menu-action="clear">Clear chat</button>
+                        <button type="button" class="chat-menu-item" data-chat-menu-action="export">Export chat</button>
+                        <button type="button" class="chat-menu-item" data-chat-menu-action="shortcut">Add shortcut</button>
+                        <div class="chat-menu-divider"></div>
+                        <button type="button" class="chat-menu-item danger" data-chat-menu-action="block">Block</button>
+                    </div>
+                    <button type="button" class="sr-only" id="mute-chat-btn">Mute notifications</button>
+                </div>
+            </header>
+
+            <section class="call-panel hidden" id="call-panel" aria-live="polite">
+                <div class="call-card">
+                    <div class="call-card-head">
+                        <span class="brand-badge" id="call-mode-badge">Voice call</span>
+                        <span class="call-meta-chip" id="call-meta">Connecting</span>
+                    </div>
+                    <div class="call-stage">
+                        <video class="call-video remote-video hidden" id="remote-video" autoplay playsinline></video>
+                        <audio class="call-audio-remote" id="remote-audio" autoplay playsinline></audio>
+                        <video class="call-video local-video hidden" id="local-video" autoplay playsinline muted></video>
+                        <div class="call-placeholder" id="call-placeholder">
+                            <div class="avatar call-avatar" id="call-avatar">W</div>
+                            <h3 id="call-name">No active call</h3>
+                            <p id="call-status-text">Start a voice or video call when both people are online.</p>
+                        </div>
+                    </div>
+                    <div class="incoming-call-actions hidden" id="incoming-call-actions">
+                        <button type="button" class="secondary-btn" id="reject-call-btn">Decline</button>
+                        <button type="button" class="primary-btn" id="accept-call-btn">Accept</button>
+                    </div>
+                    <div class="call-controls hidden" id="call-controls">
+                        <button type="button" class="icon-btn ghost-btn" id="toggle-mic-btn">Mute mic</button>
+                        <button type="button" class="icon-btn ghost-btn" id="toggle-camera-btn">Camera off</button>
+                        <button type="button" class="primary-btn danger-btn" id="end-call-btn">End call</button>
+                    </div>
+                </div>
+            </section>
+
+            <div class="messages-scroller" id="messages-scroller">
+                <button class="load-more-btn hidden" id="load-more-btn">Load older messages</button>
+                <section class="messages" id="messages"></section>
+                <div class="empty-state" id="empty-state">
+                    <div class="empty-shortcuts" aria-hidden="true">
+                        <div class="shortcut-stack">
+                            <article class="shortcut-card">
+                                <div class="shortcut-icon">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm6 1.5V9h4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                            </article>
+                            <strong>Send document</strong>
+                        </div>
+                        <div class="shortcut-stack">
+                            <article class="shortcut-card">
+                                <div class="shortcut-icon">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-7 14v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1M19 8v6M16 11h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                            </article>
+                            <strong>Add contact</strong>
+                        </div>
+                        <div class="shortcut-stack">
+                            <article class="shortcut-card">
+                                <div class="shortcut-icon ai-ring">AI</div>
+                            </article>
+                            <strong>Ask Meta AI</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="info-drawer hidden" id="chat-info-drawer">
+                <div class="info-drawer-head">
+                    <div>
+                        <span class="brand-badge">Chat Info</span>
+                        <h3 id="info-name">No chat selected</h3>
+                    </div>
+                    <button type="button" class="icon-btn compact-btn ghost-btn" id="close-info-btn">Close</button>
+                </div>
+                <div class="info-grid">
+                    <div class="info-card">
+                        <span>Phone</span>
+                        <strong id="info-phone">-</strong>
+                    </div>
+                    <div class="info-card">
+                        <span>Status</span>
+                        <strong id="info-state">Offline</strong>
+                    </div>
+                    <div class="info-card">
+                        <span>Last seen</span>
+                        <strong id="info-last-seen">-</strong>
+                    </div>
+                    <div class="info-card">
+                        <span>Messages</span>
+                        <strong id="info-message-count">0</strong>
+                    </div>
+                    <div class="info-card">
+                        <span>Media</span>
+                        <strong id="info-media-count">0</strong>
+                    </div>
+                    <div class="info-card">
+                        <span>Unread</span>
+                        <strong id="info-unread-count">0</strong>
+                    </div>
+                    <div class="info-card info-card-wide">
+                        <span>Media</span>
+                        <strong id="info-fingerprint">Photos, videos and files</strong>
+                    </div>
+                    <div class="info-card info-card-wide">
+                        <span>Preferences</span>
+                        <strong id="info-preferences">No chat selected</strong>
+                    </div>
+                </div>
+                <div class="info-actions">
+                    <button type="button" class="secondary-btn" id="info-toggle-pin-btn">Pin chat</button>
+                    <button type="button" class="secondary-btn" id="info-toggle-mute-btn">Mute notifications</button>
+                    <button type="button" class="primary-btn danger-btn" id="info-delete-chat-btn">Delete chat</button>
+                </div>
+            </aside>
+
+            <div class="attachment-preview hidden" id="attachment-preview"></div>
+
+            <div class="emoji-bar hidden" id="emoji-bar" aria-label="Quick emoji actions">
+                <button type="button" class="emoji-btn" data-emoji="&#128513;">&#128513;</button>
+                <button type="button" class="emoji-btn" data-emoji="&#128077;">&#128077;</button>
+                <button type="button" class="emoji-btn" data-emoji="&#10084;&#65039;">&#10084;&#65039;</button>
+                <button type="button" class="emoji-btn" data-emoji="&#128525;">&#128525;</button>
+            </div>
+
+            <form class="composer" id="composer">
+                <label class="icon-btn composer-plus compact-btn toolbar-button" for="file-input" title="Attach file" aria-label="Attach file">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 12.5 12 8a3 3 0 0 1 4.2 4.2l-6.2 6.2a4.5 4.5 0 0 1-6.4-6.4l6.2-6.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span class="sr-only">Attach</span>
+                </label>
+                <input id="file-input" type="file" hidden accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt">
+                <input id="camera-input" type="file" hidden accept="image/*,video/*" capture="environment">
+                <input id="status-file-input" type="file" hidden accept="image/*,video/*">
+                <button type="button" class="icon-btn composer-camera compact-btn toolbar-button" id="camera-btn" title="Open camera" aria-label="Open camera">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6 9.5 4h5L16 6h2a2 2 0 0 1 2 2v8.5A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5V8a2 2 0 0 1 2-2zm4 2.5A4.5 4.5 0 1 0 12 17a4.5 4.5 0 0 0 0-9zm0 2A2.5 2.5 0 1 1 9.5 13 2.5 2.5 0 0 1 12 10.5z" fill="currentColor"/></svg>
+                    <span class="sr-only">Camera</span>
+                </button>
+                <div class="camera-menu hidden" id="camera-menu" role="menu" aria-label="Camera options">
+                    <button type="button" class="camera-menu-btn" id="camera-menu-photo">Photo</button>
+                    <button type="button" class="camera-menu-btn" id="camera-menu-video">Video</button>
+                </div>
+                <button type="button" class="icon-btn composer-emoji compact-btn toolbar-button" id="emoji-toggle-btn" title="Emoji" aria-label="Emoji">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20zm-4-9a4 4 0 0 0 8 0zm-.5-3.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm9 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+                    <span class="sr-only">Emoji</span>
+                </button>
+                <input id="message-input" type="text" placeholder="Message" autocomplete="off">
+                <button type="submit" class="icon-btn compact-btn send-btn" title="Voice note" aria-label="Voice note">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V22h2v-3.1A7 7 0 0 0 19 12z"/></svg>
+                    <span class="sr-only">Voice note</span>
+                </button>
+            </form>
+        </section>
+    </div>
+
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="Primary">
+        <button type="button" class="mobile-nav-item active" data-mobile-tab="chats" aria-pressed="true">
+            <span class="mobile-nav-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 5.5A2.5 2.5 0 0 1 7 3h10a2.5 2.5 0 0 1 2.5 2.5v7A2.5 2.5 0 0 1 17 15h-5l-4.5 4v-4H7A2.5 2.5 0 0 1 4.5 12.5z" fill="currentColor"/></svg>
+            </span>
+            <span>Chats</span>
+            <span class="nav-badge hidden" data-badge="chats">0</span>
+        </button>
+        <button type="button" class="mobile-nav-item" data-mobile-tab="status" aria-pressed="false">
+            <span class="mobile-nav-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            </span>
+            <span>Stories</span>
+            <span class="nav-badge hidden" data-badge="stories">0</span>
+        </button>
+        <button type="button" class="mobile-nav-item" data-mobile-tab="camera" aria-pressed="false">
+            <span class="mobile-nav-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6 9.5 4h5L16 6h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zm4 3.5A4.5 4.5 0 1 0 12 18a4.5 4.5 0 0 0 0-9z" fill="currentColor"/></svg>
+            </span>
+            <span>Camera</span>
+        </button>
+        <button type="button" class="mobile-nav-item" data-mobile-tab="calls" aria-pressed="false">
+            <span class="mobile-nav-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.7 15.7 0 0 0 6.6 6.6l2.2-2.2c.3-.3.8-.4 1.2-.3 1 .3 2 .5 3 .5.7 0 1.2.5 1.2 1.2V20c0 .7-.5 1.2-1.2 1.2C10.3 21.2 2.8 13.7 2.8 4.4 2.8 3.7 3.3 3.2 4 3.2h3.2c.7 0 1.2.5 1.2 1.2 0 1 .2 2 .5 3 .1.4 0 .9-.3 1.2l-2 2.2z" fill="currentColor"/></svg>
+            </span>
+            <span>Calls</span>
+            <span class="nav-badge hidden" data-badge="calls">0</span>
+        </button>
+    </nav>
+</main>
+
+<div class="login-splash hidden" id="login-splash" aria-hidden="true">
+    <div class="login-splash-shell">
+        <div class="login-splash-brand">
+            <img class="login-splash-logo" src="{{ url_for('static', filename='img/wavechat-logo.svg', v=asset_version) }}" alt="WaveChat logo">
+            <div>
+                <strong>WaveChat</strong>
+                <span>Loading your chats...</span>
+            </div>
+        </div>
+        <video id="login-splash-video" class="login-splash-video" autoplay muted playsinline preload="auto">
+            <source src="{{ url_for('static', filename='media/wavechat-splash.webm', v=asset_version) }}" type="video/webm">
+        </video>
+    </div>
+</div>
+
+<dialog class="modal" id="new-chat-modal">
+    <form class="modal-card" id="new-chat-form" method="dialog">
+        <div class="modal-header">
+            <h3>Start a chat</h3>
+            <button type="button" class="icon-btn compact-btn" id="close-modal-btn">Close</button>
+        </div>
+        <p>Find someone by phone number. They need to sign in at least once before you can start chatting.</p>
+        <input id="new-chat-phone" type="tel" placeholder="Enter phone number" required>
+        <button type="submit" class="primary-btn">Find or create chat</button>
+        <div class="auth-status" id="new-chat-status"></div>
+    </form>
+</dialog>
+
+<dialog class="modal capture-modal" id="capture-modal">
+    <div class="modal-card capture-card">
+        <div class="modal-header capture-header">
+            <div>
+                <h3>Camera</h3>
+                <p class="capture-subtitle">Snap a photo or record a short video with live effects.</p>
+            </div>
+            <div class="capture-header-actions">
+                <button type="button" class="icon-btn compact-btn capture-icon-btn" id="capture-flash-btn" title="Flash" aria-label="Toggle flash">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 5 14h6l-1 8 8-12h-6z" fill="currentColor"/></svg>
+                </button>
+                <button type="button" class="icon-btn compact-btn capture-icon-btn" id="capture-switch-btn" title="Switch camera" aria-label="Switch camera">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h4l1.5-2h3L17 7h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-1.2a6 6 0 0 1-11.6 0H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2zm5 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm7 1h-2v2h2v-2z" fill="currentColor"/></svg>
+                </button>
+                <button type="button" class="icon-btn compact-btn" id="capture-close-btn">Close</button>
+            </div>
+        </div>
+        <div class="capture-stage">
+            <video id="capture-live" class="capture-live" autoplay playsinline muted></video>
+            <img id="capture-photo-preview" class="capture-preview hidden" alt="Captured preview">
+            <video id="capture-video-preview" class="capture-preview hidden" controls playsinline></video>
+            <div class="capture-empty" id="capture-empty">Allow camera access to capture inside the app.</div>
+            <div class="capture-flash" id="capture-flash" aria-hidden="true"></div>
+
+            <div class="capture-overlay">
+                <div class="capture-topbar">
+                    <div class="capture-top-left">
+                        <button type="button" class="capture-icon-btn" aria-label="Profile">
+                            <span class="capture-avatar">W</span>
+                        </button>
+                        <button type="button" class="capture-icon-btn" aria-label="Search">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14zm7-1 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        </button>
+                        <button type="button" class="capture-icon-btn" aria-label="Notifications">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 7h18s-3 0-3-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M13.7 21a2 2 0 0 1-3.4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        </button>
+                    </div>
+                    <div class="capture-top-right">
+                        <button type="button" class="capture-icon-btn" aria-label="Add">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        </button>
+                        <button type="button" class="capture-icon-btn" aria-label="Flip">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.4-6.4L21 8V3h-5l2.2 2.2A7 7 0 1 0 19 19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="capture-mode-switch capture-mode-overlay" role="tablist" aria-label="Capture mode">
+                    <button type="button" class="filter-chip active" data-capture-mode="photo" aria-pressed="true">Photo</button>
+                    <button type="button" class="filter-chip" data-capture-mode="video" aria-pressed="false">Video</button>
+                </div>
+
+                <div class="capture-filters capture-filter-rail" id="capture-filters" role="tablist" aria-label="Filters">
+                    <button type="button" class="capture-filter-btn active" data-capture-filter="normal" aria-pressed="true"><span class="filter-emoji">😊</span><span class="sr-only">Normal</span></button>
+                    <button type="button" class="capture-filter-btn" data-capture-filter="vivid" aria-pressed="false"><span class="filter-emoji">🐶</span><span class="sr-only">Vivid</span></button>
+                    <button type="button" class="capture-filter-btn" data-capture-filter="vintage" aria-pressed="false"><span class="filter-emoji">🐱</span><span class="sr-only">Vintage</span></button>
+                    <button type="button" class="capture-filter-btn" data-capture-filter="cool" aria-pressed="false"><span class="filter-emoji">🐳</span><span class="sr-only">Cool</span></button>
+                    <button type="button" class="capture-filter-btn" data-capture-filter="warm" aria-pressed="false"><span class="filter-emoji">😍</span><span class="sr-only">Warm</span></button>
+                    <button type="button" class="capture-filter-btn" data-capture-filter="bw" aria-pressed="false"><span class="filter-emoji">😎</span><span class="sr-only">B&W</span></button>
+                    <button type="button" class="capture-filter-btn" data-capture-filter="dramatic" aria-pressed="false"><span class="filter-emoji">😈</span><span class="sr-only">Dramatic</span></button>
+                    <button type="button" class="capture-filter-btn" data-capture-filter="sunset" aria-pressed="false"><span class="filter-emoji">😜</span><span class="sr-only">Sunset</span></button>
+                    <button type="button" class="capture-filter-btn" data-capture-filter="frost" aria-pressed="false"><span class="filter-emoji">🥶</span><span class="sr-only">Frost</span></button>
+                </div>
+
+                <div class="capture-right-rail">
+                    <button type="button" class="capture-rail-btn" aria-label="Magic">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 9 9l-6 3 6 3 3 6 3-6 6-3-6-3-3-6z" fill="currentColor"/></svg>
+                    </button>
+                    <button type="button" class="capture-rail-btn" aria-label="Sound">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5zm7.5 7a4.5 4.5 0 0 0-2-3.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M18.5 16a7 7 0 0 0 0-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    </button>
+                    <button type="button" class="capture-rail-btn" aria-label="HD">HD</button>
+                    <button type="button" class="capture-rail-btn" aria-label="More">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7 6 13h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    </button>
+                </div>
+
+                <div class="capture-bottom-bar">
+                    <button type="button" class="capture-side-btn" id="capture-fallback-btn" aria-label="Gallery">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4z" fill="none" stroke="currentColor" stroke-width="2"/>
+                        <path d="m4 15 4-4 3 3 5-5 4 4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                    </button>
+                    <button type="button" class="secondary-btn capture-shutter" id="capture-photo-btn"> </button>
+                    <button type="button" class="secondary-btn hidden capture-shutter" id="capture-record-btn"> </button>
+                    <button type="button" class="primary-btn capture-send" id="capture-use-btn" disabled>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20 21 12 3 4l3.8 6.5L14 12l-7.2 1.5z" fill="currentColor"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    <div class="auth-status capture-status" id="capture-status">Tap the shutter to capture, or hold to record.</div>
+</div>
+</dialog>
+
+<div class="call-modal-root hidden" id="call-modal-root" aria-hidden="true"></div>
+
+<div class="toast-stack" id="toast-stack"></div>
+
+<script src="{{ url_for('static', filename='vendor/socket.io.min.js', v=asset_version) }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/chat.js', v=asset_version) }}"></script>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
